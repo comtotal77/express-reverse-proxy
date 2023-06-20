@@ -4,15 +4,22 @@ const axios = require('axios')
 const cors = require('cors')
 const https = require('https')
 
+const morgan=require('morgan');
+
 const agent = new https.Agent({
   rejectUnauthorized: false,
 })
 
 app.set('port', process.env.PORT || 3000);
 
+//Middleware
 app.use(cors({
     origin: '*'
 }))
+app.use(morgan('dev'));
+app.use(express.urlencoded({extended:false}));
+app.use(express.json());
+
 
 require('dotenv').config()
 
