@@ -34,5 +34,10 @@ app.get(':endpoint([\\/\\w\\.-]*)', function (req, res) {
     })
 })
 
+//Iniciando el servidor, escuchando...
+app.listen(app.get('port'),()=>{
+    console.log(`Server listening on port ${app.get('port')}`);
+
+});
 
 app.listen(3000)
