@@ -8,6 +8,8 @@ const agent = new https.Agent({
   rejectUnauthorized: false,
 })
 
+app.set('port', process.env.PORT || 3000);
+
 app.use(cors({
     origin: '*'
 }))
