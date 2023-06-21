@@ -10,6 +10,7 @@ const agent = new https.Agent({
   rejectUnauthorized: false,
 })
 
+require('dotenv').config()
 app.set('port', process.env.PORT || 3000);
 
 //Middleware
@@ -19,9 +20,6 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());
-
-
-require('dotenv').config()
 
 
 app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
