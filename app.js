@@ -27,16 +27,13 @@ require('dotenv').config()
 app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
     // Remove any trailing slash from base url
     const endpoint = (process.env.API_BASE_URL).replace(/\/$/, "") + req.params.endpoint
-    const regex = /^\/((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\/(enable|disable)$/;
+    const regex = /^\/((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\/(enable|disable|check)$/;
     const matches = req.params.endpoint.match(regex);
   
     if (matches) {
       const ip = matches[1];
       const accion = matches[2];
       const endpoint = (process.env.API_BASE_URL).replace(/\/$/, "") + "/ip/firewall/address-list/print"  
-      console.log("la ip es", ip);
-      console.log("la acción es", accion);
-      console.log("el endpoint es", endpoint);
 
       const response =   await axios.post(endpoint, JSON.stringify({".query": ["address="+ip]}),{
         httpsAgent: agent,
@@ -45,7 +42,10 @@ app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
             'Authorization': 'Basic dXNlcjE6MTQ3OTYzbGtqKio='
           }
         }).then(async response => {
-            //res.send(response.data[0][".id"])
+            if (accion === "check") {
+                res.status(200).send(response.data[0]["disabled"])
+                return
+            }
             endpoint2=endpoint.replace("print",response.data[0][".id"])
             let accion2 = (accion === "disable") ? true : false;
             const response2 =   await axios.patch(endpoint2, JSON.stringify({"disabled": accion2}),{
