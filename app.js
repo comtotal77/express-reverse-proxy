@@ -42,6 +42,10 @@ app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
             'Authorization': 'Basic dXNlcjE6MTQ3OTYzbGtqKio='
           }
         }).then(async response => {
+            if (!response.data[0]) {
+                res.status(400).send("ip_not_found")
+                return
+            }
             if (accion === "check") {
                 res.status(200).send(response.data[0]["disabled"])
                 return
@@ -55,7 +59,7 @@ app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
                     'Authorization': 'Basic dXNlcjE6MTQ3OTYzbGtqKio='
                   }
                 }).then(response2 => {
-                    res.status(200).send("Operación exitosa");
+                    res.status(200).send("done");
                 }).catch(error => {
                     res.json(error)
                 })
@@ -63,7 +67,7 @@ app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
             res.json(error)
         })
     } else {
-      res.status(400).send("Ruta de endpoint no válida");
+      res.status(400).send("invalid_endpoint");
     }
 })
 
