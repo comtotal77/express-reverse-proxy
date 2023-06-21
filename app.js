@@ -27,46 +27,44 @@ require('dotenv').config()
 app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
     // Remove any trailing slash from base url
     const endpoint = (process.env.API_BASE_URL).replace(/\/$/, "") + req.params.endpoint
-
-    const regex2 = /^\/((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\/(\w+)$/;
     const regex = /^\/((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\/(enable|disable)$/;
     const matches = req.params.endpoint.match(regex);
   
     if (matches) {
       const ip = matches[1];
       const accion = matches[2];
-      const endpoint = (process.env.API_BASE_URL).replace(/\/$/, "") + "/ip/firewall/address-list"  
+      const endpoint = (process.env.API_BASE_URL).replace(/\/$/, "") + "/ip/firewall/address-list/print"  
       console.log("la ip es", ip);
       console.log("la acción es", accion);
       console.log("el endpoint es", endpoint);
-      const response =   await axios.get(endpoint, {
+
+      const response =   await axios.post(endpoint, JSON.stringify({".query": ["address="+ip]}),{
         httpsAgent: agent,
-        headers: { 
+        headers: {
+            'content-type': 'application/json', 
             'Authorization': 'Basic dXNlcjE6MTQ3OTYzbGtqKio='
           }
-    }).then(response => {
-        //res.json(response.data)
-        const registros = response.data;
-        let output = "";
-        registros.forEach((registro, index) => {
-        const id = registro[".id"];
-        output += `Registro ${index + 1}: ID:${id}\n`;
-        });
-        res.send(output);
-        //res.send(response.data[".id"])
-    }).catch(error => {
-        res.json(error)
-    })
-
-      //res.status(200).send("Operación exitosa");
-
-
-      // Resto del código de la API aquí
+        }).then(async response => {
+            //res.send(response.data[0][".id"])
+            endpoint2=endpoint.replace("print",response.data[0][".id"])
+            let accion2 = (accion === "disable") ? true : false;
+            const response2 =   await axios.patch(endpoint2, JSON.stringify({"disabled": accion2}),{
+                httpsAgent: agent,
+                headers: {
+                    'content-type': 'application/json', 
+                    'Authorization': 'Basic dXNlcjE6MTQ3OTYzbGtqKio='
+                  }
+                }).then(response2 => {
+                    res.status(200).send("Operación exitosa");
+                }).catch(error => {
+                    res.json(error)
+                })
+        }).catch(error => {
+            res.json(error)
+        })
     } else {
-      // Manejar la ruta de endpoint no válida
       res.status(400).send("Ruta de endpoint no válida");
     }
-
 })
 
 //Iniciando el servidor, escuchando...
