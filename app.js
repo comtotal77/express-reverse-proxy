@@ -24,7 +24,7 @@ app.use(express.json());
 require('dotenv').config()
 
 
-app.get(':endpoint([\\/\\w\\.-]*)', function (req, res) {
+app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
     // Remove any trailing slash from base url
     const endpoint = (process.env.API_BASE_URL).replace(/\/$/, "") + req.params.endpoint
 
