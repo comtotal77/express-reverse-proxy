@@ -45,7 +45,8 @@ app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
                 return
             }
             if (accion === "check") {
-                res.status(200).send(response.data[0]["disabled"])
+                let estado = (response.data[0]["disabled"] === "true") ? "disable" : "enable";
+                res.status(200).send(estado)
                 return
             }
             endpoint2=endpoint.replace("print",response.data[0][".id"])
@@ -57,7 +58,7 @@ app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
                     'Authorization': 'Basic dXNlcjE6MTQ3OTYzbGtqKio='
                   }
                 }).then(response2 => {
-                    res.status(200).send("done");
+                    res.status(200).send(accion + "d");
                 }).catch(error => {
                     res.json(error)
                 })
