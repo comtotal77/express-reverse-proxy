@@ -2,10 +2,7 @@ version: '3'
 
 services:
   nodejs:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: nodejs
+    image: masterpablo/express-reverse-proxy:master
     container_name: nodejs
     restart: unless-stopped
     env_file: .env
