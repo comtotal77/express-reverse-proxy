@@ -44,7 +44,7 @@ app.get(":endpoint([\\/\\w\\.-]*)", async function (req, res) {
         httpsAgent: agent,
         headers: {
           "content-type": "application/json",
-          Authorization: "Basic dXNlcjE6MTQ3OTYzbGtqKio=",
+          Authorization: process.env.AUTH_HEADER_ROUTER,
         },
       })
       .then(async (response) => {
@@ -65,7 +65,7 @@ app.get(":endpoint([\\/\\w\\.-]*)", async function (req, res) {
             httpsAgent: agent,
             headers: {
               "content-type": "application/json",
-              Authorization: "Basic dXNlcjE6MTQ3OTYzbGtqKio=",
+              Authorization: process.env.AUTH_HEADER_ROUTER,
             },
           })
           .then(async (response2) => {
@@ -90,7 +90,7 @@ app.get(":endpoint([\\/\\w\\.-]*)", async function (req, res) {
                     httpsAgent: agent,
                     headers: {
                       "content-type": "application/json",
-                      Authorization: "Basic dXNlcjE6MTQ3OTYzbGtqKio=",
+                      Authorization: process.env.AUTH_HEADER_ROUTER,
                     },
                   }
                 )
