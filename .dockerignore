@@ -5,3 +5,5 @@ Dockerfile
 .dockerignore
 .git
 docker-compose.yml
+.github
+.vscode
