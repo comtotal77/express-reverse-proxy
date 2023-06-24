@@ -25,12 +25,15 @@ app.use(express.json());
 app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
     // Remove any trailing slash from base url
     const endpoint = (process.env.API_BASE_URL).replace(/\/$/, "") + req.params.endpoint
-    const regex = /^\/((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\/(enable|disable|check)$/;
+    //const regex = /^\/((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\/(enable|disable|check)$/;
+    //const regex = /^\/((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\/(enable|disable|check)(\/([1-9]|1[0-9]|2[0-4]))?$/;
+    const regex = /^\/((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\/(enable|disable|check)(?:\/([1-9]|1[0-9]|2[0-4]))?$/
     const matches = req.params.endpoint.match(regex);
   
     if (matches) {
       const ip = matches[1];
       const accion = matches[2];
+      const tiempo = matches[3];
       const endpoint = (process.env.API_BASE_URL).replace(/\/$/, "") + "/ip/firewall/address-list/print"  
 
       const response =   await axios.post(endpoint, JSON.stringify({".query": ["address="+ip]}),{
@@ -57,8 +60,31 @@ app.get(':endpoint([\\/\\w\\.-]*)', async function (req, res) {
                     'content-type': 'application/json', 
                     'Authorization': 'Basic dXNlcjE6MTQ3OTYzbGtqKio='
                   }
-                }).then(response2 => {
-                    res.status(200).send(accion + "d");
+                }).then(async response2 => {
+                    if (accion === "enable") {
+                        const endpointEnable = (process.env.API_BASE_URL).replace(/\/$/, "") + "/system/scheduler"                 
+                        const responseEnable =   await axios.put(endpointEnable, 
+                            JSON.stringify({"name": ip,
+                            "interval": tiempo+"m",
+                            "on-event": "ip firewall/address-list/disable [find address="+ip+"]\r\nsystem/scheduler/remove [find name="+ip+"]"
+                            }),
+                            {
+                            httpsAgent: agent,
+                            headers: {
+                                'content-type': 'application/json', 
+                                'Authorization': 'Basic dXNlcjE6MTQ3OTYzbGtqKio='
+                            }
+                            }).then(responseEnable => {
+                                res.status(200).send(accion + "d:" + tiempo);
+                                return
+                            }).catch(error => {
+                                res.json(error)
+                                return
+                            })
+                    }
+                    else {
+                        res.status(200).send(accion + "d");
+                    }
                 }).catch(error => {
                     res.json(error)
                 })
