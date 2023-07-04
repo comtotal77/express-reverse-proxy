@@ -3,6 +3,7 @@ const app = express();
 const axios = require("axios");
 const cors = require("cors");
 const https = require("https");
+const difTiempo = require("./difTiempo");
 
 const morgan = require("morgan");
 
@@ -55,8 +56,61 @@ app.get(":endpoint([\\/\\w\\.-]*)", async function (req, res) {
         if (accion === "check") {
           let estado =
             response.data[0]["disabled"] === "true" ? "disable" : "enable";
-          res.status(200).send(estado);
-          return;
+          if (estado === "enable") {
+            const endpoint3 =
+              process.env.API_BASE_URL.replace(/\/$/, "") +
+              "/system/scheduler/print";
+            const response3 = await axios
+              .post(endpoint3, JSON.stringify({ ".query": ["name=" + ip] }), {
+                httpsAgent: agent,
+                headers: {
+                  "content-type": "application/json",
+                  Authorization: process.env.AUTH_HEADER_ROUTER,
+                },
+              })
+              .then(async (response3) => {
+                const endpoint4 =
+                  process.env.API_BASE_URL.replace(/\/$/, "") + "/system/clock";
+
+                const response4 = await axios
+                  .get(endpoint4, {
+                    httpsAgent: agent,
+                    headers: {
+                      "content-type": "application/json",
+                      Authorization: process.env.AUTH_HEADER_ROUTER,
+                    },
+                  })
+                  .then((response4) => {
+                    const fecha2 =
+                      response4.data["date"] + " " + response4.data["time"];
+
+                    const fecha1 = response3.data[0]["next-run"].split(" ");
+                    let fecha1def = "";
+
+                    if (fecha1.length === 1) {
+                      fecha1def = response4.data["date"] + " " + fecha1[0];
+                    } else {
+                      fecha1def =
+                        fecha1[0].replace(/(\d{2}:\d{2}:\d{2})$/, "2023 $1") +
+                        " " +
+                        fecha1[1];
+                    }
+
+                    const tiempo_resta = difTiempo(response4.data, fecha1def);
+                    return res.status(200).send(tiempo_resta);
+                  })
+                  .catch((error) => {
+                    res.json(error);
+                  });
+              })
+              .catch((error) => {
+                res.json(error);
+              });
+            return;
+          } else {
+            res.status(200).send("00:00:00:00");
+            return;
+          }
         }
         endpoint2 = endpoint.replace("print", response.data[0][".id"]);
         let accion2 = accion === "disable" ? true : false;
