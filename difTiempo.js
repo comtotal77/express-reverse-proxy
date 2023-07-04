@@ -40,4 +40,4 @@ function difTiempo(timeActJson, programado) {
     .padStart(2, "0")}`;
 }
 
-export default difTiempo;
+module.exports = difTiempo;
