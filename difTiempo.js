@@ -1,4 +1,10 @@
 function difTiempo(timeActJson, programado) {
+
+  const meses = {
+    'jan': 1,'feb': 2,'mar': 3,'apr': 4,'may': 5,'jun': 6,'jul': 7,'aug': 8,'sep': 9,
+    'oct': 10,'nov': 11,'dec': 12
+  };
+
   // Obtener la hora y la fecha de next-run y time
   const nextRunSplit = programado.split(" ");
   const nextRunDateStr = nextRunSplit[0];
@@ -11,10 +17,16 @@ function difTiempo(timeActJson, programado) {
   // Convertir la fecha de next-run a un objeto Date
   let nextRunDate;
   if (nextRunDateStr.includes("/")) {
-    const nextRunSplit = nextRunDateStr.split("/");
-    const nextRunMonth = nextRunSplit[0];
+    let nextRunSplit = nextRunDateStr.split("/");
+    let nextRunMonth = nextRunSplit[0];
+    nextRunMonth = meses[nextRunMonth];
     const nextRunDay = nextRunSplit[1];
-    const nextRunYear = nextRunSplit[2];
+    let nextRunYear
+    if (nextRunSplit.length === 2){
+      nextRunYear = "2023";
+    } else {
+      nextRunYear = nextRunSplit[2];
+    }
     nextRunDate = new Date(
       `${nextRunMonth} ${nextRunDay}, ${nextRunYear} ${nextRunTimeStr}`
     );
